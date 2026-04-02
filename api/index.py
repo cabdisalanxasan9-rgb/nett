@@ -11,6 +11,20 @@ if str(PROJECT_DIR) not in sys.path:
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 
+import django
+from django.core.management import call_command
 from django.core.wsgi import get_wsgi_application
+
+
+def _maybe_run_migrations() -> None:
+    # In ephemeral serverless runtimes, make sure required tables exist.
+    if os.environ.get("DJANGO_AUTO_MIGRATE", "1") != "1":
+        return
+
+    django.setup()
+    call_command("migrate", interactive=False, run_syncdb=True, verbosity=0)
+
+
+_maybe_run_migrations()
 
 app = get_wsgi_application()
