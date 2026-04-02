@@ -1,0 +1,63 @@
+Aad u fiican. Domain-kaaga waa cabdul.page.gd, database-na waa Supabase.
+Hadda samee talaabooyinkan si toos ah:
+
+Ka qaado Supabase connection string
+
+Gal Supabase project
+
+Tag Project Settings > Database
+
+Nuqul URI-ga Postgres (Transaction mode ama Session mode)
+
+Ku xiro Vercel project-ka
+
+Fur terminal:
+cd D:\net\mysite
+
+Login:
+vercel login
+
+Link project:
+vercel link
+
+Ku dar env vars production ee Vercel
+
+vercel env add DJANGO_DEBUG production
+qiime: false
+
+vercel env add DJANGO_SECRET_KEY production
+qiime: secret adag
+
+vercel env add DJANGO_ALLOWED_HOSTS production
+qiime: .vercel.app,cabdul.page.gd
+
+vercel env add DJANGO_CSRF_TRUSTED_ORIGINS production
+qiime: https://cabdul.page.gd,https://YOUR-PROJECT.vercel.app
+
+vercel env add DJANGO_FORCE_HTTPS production
+qiime: true
+
+vercel env add DATABASE_URL production
+qiime: Supabase Postgres URL
+
+Mari migrations adigoo isticmaalaya Supabase URL
+
+PowerShell:
+$env:DATABASE_URL="PASTE_SUPABASE_URL"
+python.exe manage.py migrate
+
+Haddii aad rabto superuser:
+python.exe manage.py createsuperuser
+
+Deploy production
+
+vercel --prod
+
+Ku xiro domain-ka cabdul.page.gd
+
+vercel domains add cabdul.page.gd
+
+Vercel wuxuu ku siinayaa DNS record; ku dar DNS-ka page.gd sida uu ku farayo.
+
+Sug propagation kadib fur:
+https://cabdul.page.gd
