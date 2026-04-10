@@ -134,6 +134,27 @@ def _zaad_manual_enabled() -> bool:
 	return bool(getattr(settings, "ZAAD_MANUAL_PAYMENT_ENABLED", True))
 
 
+def _manual_payment_destinations():
+	destinations = []
+	zaad = getattr(settings, "PAYMENT_ZAAD_ACCOUNT", "") or getattr(settings, "ZAAD_MERCHANT_NUMBER", "")
+	evc = getattr(settings, "PAYMENT_EVC_ACCOUNT", "")
+	sahal = getattr(settings, "PAYMENT_SAHAL_ACCOUNT", "")
+	bank_name = getattr(settings, "PAYMENT_BANK_NAME", "")
+	bank_account = getattr(settings, "PAYMENT_BANK_ACCOUNT", "")
+
+	if zaad:
+		destinations.append({"code": "zaad", "label": "Zaad", "account": zaad})
+	if evc:
+		destinations.append({"code": "evc", "label": "EVC Plus", "account": evc})
+	if sahal:
+		destinations.append({"code": "sahal", "label": "Sahal", "account": sahal})
+	if bank_name or bank_account:
+		bank_value = " | ".join(item for item in [bank_name, bank_account] if item)
+		destinations.append({"code": "bank", "label": "Bank Transfer", "account": bank_value})
+
+	return destinations
+
+
 def _stripe_value(obj, key: str, default=None):
 	if obj is None:
 		return default
@@ -677,6 +698,7 @@ def ai_assistant(request):
 	zaad_merchant_number = getattr(settings, "ZAAD_MERCHANT_NUMBER", "")
 	zaad_amount = getattr(settings, "ZAAD_PRO_AMOUNT", "5")
 	zaad_currency = getattr(settings, "ZAAD_PRO_CURRENCY", "USD")
+	manual_payment_options = _manual_payment_destinations()
 	latest_zaad_payment = ZaadPaymentRequest.objects.filter(owner=request.user).first()
 
 	if request.GET.get("upgraded") == "1":
@@ -724,6 +746,7 @@ def ai_assistant(request):
 						"zaad_merchant_number": zaad_merchant_number,
 						"zaad_amount": zaad_amount,
 						"zaad_currency": zaad_currency,
+						"manual_payment_options": manual_payment_options,
 						"latest_zaad_payment": latest_zaad_payment,
 					},
 				)
@@ -849,6 +872,7 @@ def ai_assistant(request):
 			"zaad_merchant_number": zaad_merchant_number,
 			"zaad_amount": zaad_amount,
 			"zaad_currency": zaad_currency,
+			"manual_payment_options": manual_payment_options,
 			"latest_zaad_payment": latest_zaad_payment,
 		},
 	)
@@ -947,10 +971,22 @@ def zaad_payment_submit(request):
 		return redirect("ai_assistant")
 
 	reference = (request.POST.get("zaad_reference") or "").strip()
+	payment_channel = (request.POST.get("payment_channel") or "").strip().lower()
 	sender_phone = (request.POST.get("zaad_sender_phone") or "").strip()
 	note = (request.POST.get("zaad_note") or "").strip()
 	amount_raw = (request.POST.get("zaad_amount") or "").strip()
 	amount_value = None
+	recipient_label = ""
+	recipient_account = ""
+
+	payment_options = _manual_payment_destinations()
+	selected = next((item for item in payment_options if item.get("code") == payment_channel), None)
+	if not selected:
+		request.session["billing_status_note"] = "Please choose payment method before submitting."
+		return redirect("ai_assistant")
+
+	recipient_label = selected.get("label", "")
+	recipient_account = selected.get("account", "")
 
 	if not reference:
 		request.session["billing_status_note"] = "Please provide Zaad transaction reference."
@@ -966,13 +1002,16 @@ def zaad_payment_submit(request):
 	currency = getattr(settings, "ZAAD_PRO_CURRENCY", "USD")
 	ZaadPaymentRequest.objects.create(
 		owner=request.user,
+		payment_channel=payment_channel,
+		recipient_label=recipient_label,
+		recipient_account=recipient_account,
 		reference=reference,
 		sender_phone=sender_phone,
 		amount=amount_value,
 		currency=currency,
 		note=note,
 	)
-	request.session["billing_status_note"] = "Zaad payment submitted. Admin review is pending."
+	request.session["billing_status_note"] = "Payment proof submitted. Admin review is pending."
 	return redirect("ai_assistant")
 
 

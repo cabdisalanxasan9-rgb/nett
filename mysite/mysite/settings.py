@@ -206,6 +206,13 @@ ZAAD_MERCHANT_NUMBER = os.environ.get('ZAAD_MERCHANT_NUMBER', '').strip()
 ZAAD_PRO_AMOUNT = os.environ.get('ZAAD_PRO_AMOUNT', '5').strip()
 ZAAD_PRO_CURRENCY = os.environ.get('ZAAD_PRO_CURRENCY', 'USD').strip().upper()
 
+# Direct payment channels shown on the Pro upgrade page.
+PAYMENT_ZAAD_ACCOUNT = os.environ.get('PAYMENT_ZAAD_ACCOUNT', '').strip()
+PAYMENT_EVC_ACCOUNT = os.environ.get('PAYMENT_EVC_ACCOUNT', '').strip()
+PAYMENT_SAHAL_ACCOUNT = os.environ.get('PAYMENT_SAHAL_ACCOUNT', '').strip()
+PAYMENT_BANK_NAME = os.environ.get('PAYMENT_BANK_NAME', '').strip()
+PAYMENT_BANK_ACCOUNT = os.environ.get('PAYMENT_BANK_ACCOUNT', '').strip()
+
 _pro_paths_raw = os.environ.get('PRO_ONLY_PATH_PREFIXES', '/api/tokens/create/')
 PRO_ONLY_PATH_PREFIXES = tuple(item.strip() for item in _pro_paths_raw.split(',') if item.strip())
 PRO_RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get('PRO_RATE_LIMIT_WINDOW_SECONDS', '60'))

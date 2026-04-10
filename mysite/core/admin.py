@@ -16,6 +16,7 @@ def _send_zaad_review_email(payment: ZaadPaymentRequest, approved: bool) -> None
 		f"Hello {payment.owner.username},",
 		"",
 		f"Your Zaad payment request ({payment.reference}) has been {status_text}.",
+		f"Channel: {payment.get_payment_channel_display()} | Receiver: {payment.recipient_account}",
 	]
 
 	if approved:
@@ -84,9 +85,9 @@ class ProSubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(ZaadPaymentRequest)
 class ZaadPaymentRequestAdmin(admin.ModelAdmin):
-	list_display = ("owner", "reference", "amount", "currency", "status", "created_at", "reviewed_at")
+	list_display = ("owner", "payment_channel", "recipient_account", "reference", "amount", "currency", "status", "created_at", "reviewed_at")
 	list_filter = ("status", "currency", "created_at")
-	search_fields = ("owner__username", "reference", "sender_phone")
+	search_fields = ("owner__username", "reference", "sender_phone", "recipient_account")
 	actions = ("approve_requests", "reject_requests")
 
 	@admin.action(description="Approve selected Zaad requests and activate Pro")

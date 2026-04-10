@@ -46,13 +46,38 @@
 
             {% if pro_required and not is_pro and zaad_enabled %}
                 <hr style="border:none;border-top:1px solid #eadfce;margin:1rem 0;">
-                <h3>Pay with Zaad</h3>
-                {% if zaad_merchant_number %}
-                    <p class="muted">Send payment to Zaad number: <strong>{{ zaad_merchant_number }}</strong></p>
+                <h3>Pay Directly (Mobile/Bank)</h3>
+                {% if manual_payment_options %}
+                    <p class="muted">Choose a payment channel below, send payment, then submit reference.</p>
                     <p class="muted">Expected amount: {{ zaad_amount }} {{ zaad_currency }}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Channel</th>
+                                <th>Receiver</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for opt in manual_payment_options %}
+                            <tr>
+                                <td>{{ opt.label }}</td>
+                                <td>{{ opt.account }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                     <form method="post" action="{% url 'zaad_payment_submit' %}">
                         {% csrf_token %}
                         <div class="grid-2">
+                            <div>
+                                <label for="payment_channel">Payment Channel</label>
+                                <select id="payment_channel" name="payment_channel" required style="width: 100%; border: 1px solid #d7cbb8; border-radius: 8px; padding: 0.55rem;">
+                                    <option value="">Choose...</option>
+                                    {% for opt in manual_payment_options %}
+                                    <option value="{{ opt.code }}">{{ opt.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                             <div>
                                 <label for="zaad_reference">Transaction Reference</label>
                                 <input id="zaad_reference" name="zaad_reference" type="text" required>
@@ -73,10 +98,10 @@
                         <p style="margin-top:0.75rem;"><button type="submit">Submit Zaad Payment</button></p>
                     </form>
                 {% else %}
-                    <p class="muted">Zaad merchant number is not configured yet.</p>
+                    <p class="muted">No direct payment channel is configured yet.</p>
                 {% endif %}
                 {% if latest_zaad_payment %}
-                    <p class="muted">Latest Zaad request: {{ latest_zaad_payment.reference }} | Status: {{ latest_zaad_payment.status|title }}</p>
+                    <p class="muted">Latest request: {{ latest_zaad_payment.reference }} | {{ latest_zaad_payment.payment_channel|upper }} | Status: {{ latest_zaad_payment.status|title }}</p>
                 {% endif %}
             {% endif %}
 

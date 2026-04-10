@@ -130,6 +130,17 @@ class ProSubscription(models.Model):
 
 
 class ZaadPaymentRequest(models.Model):
+	CHANNEL_ZAAD = "zaad"
+	CHANNEL_EVC = "evc"
+	CHANNEL_SAHAL = "sahal"
+	CHANNEL_BANK = "bank"
+	PAYMENT_CHANNEL_CHOICES = [
+		(CHANNEL_ZAAD, "Zaad"),
+		(CHANNEL_EVC, "EVC Plus"),
+		(CHANNEL_SAHAL, "Sahal"),
+		(CHANNEL_BANK, "Bank Transfer"),
+	]
+
 	STATUS_PENDING = "pending"
 	STATUS_APPROVED = "approved"
 	STATUS_REJECTED = "rejected"
@@ -140,6 +151,9 @@ class ZaadPaymentRequest(models.Model):
 	]
 
 	owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="zaad_payment_requests")
+	payment_channel = models.CharField(max_length=20, choices=PAYMENT_CHANNEL_CHOICES, default=CHANNEL_ZAAD)
+	recipient_label = models.CharField(max_length=80, blank=True)
+	recipient_account = models.CharField(max_length=120, blank=True)
 	reference = models.CharField(max_length=80, db_index=True)
 	sender_phone = models.CharField(max_length=30, blank=True)
 	amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
