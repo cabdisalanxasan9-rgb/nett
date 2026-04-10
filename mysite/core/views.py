@@ -695,6 +695,7 @@ def ai_assistant(request):
 	can_use_ai = is_pro or not pro_required
 	subscription = ProSubscription.objects.filter(owner=request.user).first()
 	zaad_enabled = _zaad_manual_enabled()
+	show_stripe_upgrade_button = bool(getattr(settings, "SHOW_STRIPE_UPGRADE_BUTTON", False))
 	zaad_merchant_number = getattr(settings, "ZAAD_MERCHANT_NUMBER", "")
 	zaad_amount = getattr(settings, "ZAAD_PRO_AMOUNT", "5")
 	zaad_currency = getattr(settings, "ZAAD_PRO_CURRENCY", "USD")
@@ -738,6 +739,7 @@ def ai_assistant(request):
 						"is_pro": is_pro,
 						"pro_required": pro_required,
 						"can_use_ai": can_use_ai,
+						"show_stripe_upgrade_button": show_stripe_upgrade_button,
 						"billing_url": billing_url,
 						"stripe_ready": _stripe_is_ready(),
 						"has_subscription_customer": bool(subscription and subscription.stripe_customer_id),
@@ -864,6 +866,7 @@ def ai_assistant(request):
 			"is_pro": is_pro,
 			"pro_required": pro_required,
 			"can_use_ai": can_use_ai,
+			"show_stripe_upgrade_button": show_stripe_upgrade_button,
 			"billing_url": billing_url,
 			"stripe_ready": _stripe_is_ready(),
 			"has_subscription_customer": bool(subscription and subscription.stripe_customer_id),

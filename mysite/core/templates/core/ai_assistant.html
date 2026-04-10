@@ -35,12 +35,14 @@
                 {% if pro_required %}| Billing required{% else %}| Billing disabled{% endif %}
             </p>
             {% if pro_required and not is_pro %}
-                <form method="post" action="{{ billing_url }}">
-                    {% csrf_token %}
-                    <button type="submit">Upgrade to Pro</button>
-                </form>
-                {% if not stripe_ready %}
-                    <p class="muted">Stripe setup missing on server (need key + price ID).</p>
+                {% if show_stripe_upgrade_button %}
+                    <form method="post" action="{{ billing_url }}">
+                        {% csrf_token %}
+                        <button type="submit">Upgrade to Pro</button>
+                    </form>
+                    {% if not stripe_ready %}
+                        <p class="muted">Stripe setup missing on server (need key + price ID).</p>
+                    {% endif %}
                 {% endif %}
             {% endif %}
 
